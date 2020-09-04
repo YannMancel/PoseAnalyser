@@ -8,7 +8,7 @@
 
     <!-- CameraXFragment.kt -->
     <string name="no_permission">No permission</string>
-    <string name="analyzer_failed_scan">Barcode scanning failed:\n%1$s</string>
+    <string name="analyzer_failed_scan">Pose detection failed:\n%1$s</string>
     <string name="error_camera">Error camera:\n%1$s</string>
 
 </resources>

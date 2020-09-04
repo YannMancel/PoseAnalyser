@@ -61,6 +61,9 @@ class CameraXFragment : BaseFragment() {
     companion object {
         private const val RATIO_4_3_VALUE = 4.0 / 3.0
         private const val RATIO_16_9_VALUE = 16.0 / 9.0
+
+        private const val RESOLUTION_1920_VALUE = 1920
+        private const val RESOLUTION_1080_VALUE = 1080
     }
 
     // METHODS -------------------------------------------------------------------------------------
@@ -164,7 +167,30 @@ class CameraXFragment : BaseFragment() {
     /**
      * Handles the [CameraState.PreviewReady] state
      */
-    private fun handleStatePreviewReady() { /* Do nothing here */ }
+    private fun handleStatePreviewReady() {
+        // Preview
+        val previewWidth = this._rootView.fragment_camera_preview.width.toFloat()
+        val previewHeight = this._rootView.fragment_camera_preview.height.toFloat()
+
+        // ImageAnalysis
+        val resolution = this.getResolution()
+        val deltaX = previewWidth / resolution.width.toFloat()
+        val deltaY = previewHeight / resolution.height.toFloat()
+
+        /*
+            Portrait mode:
+                deltaX ............................................... 1.0
+                deltaY ............................................... 1.18125
+
+            Landscape mode: dx: 1.18125 - dy: 1.0
+                deltaX ............................................... 1.18125
+                deltaY ............................................... 1.0
+
+         */
+
+        // Scale for pose
+        this._rootView.fragment_camera_graphic_overlay.setScale(deltaX, deltaY)
+    }
 
     /**
      * Handles the [CameraState.Error] state
@@ -301,7 +327,6 @@ class CameraXFragment : BaseFragment() {
     /**
      *  [ImageAnalysis] requires enum value of [androidx.camera.core.AspectRatio].
      *  Currently it has values of 4:3 & 16:9.
-     *
      *  Detecting the most suitable ratio for dimensions provided in @params by counting absolute
      *  of preview ratio to one of the provided values.
      *  @param width    an [Int] that contains the preview width
@@ -337,11 +362,11 @@ class CameraXFragment : BaseFragment() {
      * @return a [Size]
      */
     private fun getResolution() =
-        // For ML Kit: 1280x720 or 1920x1080 -> Ratio: 1.7
+        // For ML Kit: Mini 480x360 pixels -> Ratio: 1.3
         if (this.resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
-            Size(1080,1920)
+            Size(RESOLUTION_1080_VALUE, RESOLUTION_1920_VALUE)
         else
-            Size(1920, 1080)
+            Size(RESOLUTION_1920_VALUE, RESOLUTION_1080_VALUE)
 
     // -- Analyzer --
 
@@ -373,10 +398,6 @@ class CameraXFragment : BaseFragment() {
      * Places the pose
      * @param pose a [List] of [KeyPointOfPose]
      */
-    private fun placeKeyPointsOfPose(pose: List<KeyPointOfPose>) {
-        if (pose.isEmpty())
-            Log.d("TEST", "No person")
-        else
-            Log.d("TEST", "Person - ${pose[0]}")
-    }
+    private fun placeKeyPointsOfPose(pose: List<KeyPointOfPose>) =
+        this._rootView.fragment_camera_graphic_overlay.updatePose(pose)
 }

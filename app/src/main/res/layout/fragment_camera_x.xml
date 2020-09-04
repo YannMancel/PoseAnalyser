@@ -26,6 +26,21 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
+        <!-- GraphicOverlay: Pose display -->
+        <com.mancel.yann.poseanalyser.widgets.GraphicOverlay
+            android:id="@+id/fragment_camera_graphic_overlay"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:leftColor="@color/colorLeft"
+            app:centerColor="@color/colorCenter"
+            app:rightColor="@color/colorRight"
+            app:lineColor="@color/colorLine"
+            app:dotRadius="@integer/dot_radius"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
