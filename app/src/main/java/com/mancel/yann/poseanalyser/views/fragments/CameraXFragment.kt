@@ -62,8 +62,9 @@ class CameraXFragment : BaseFragment() {
         private const val RATIO_4_3_VALUE = 4.0 / 3.0
         private const val RATIO_16_9_VALUE = 16.0 / 9.0
 
-        private const val RESOLUTION_1920_VALUE = 1920
-        private const val RESOLUTION_1080_VALUE = 1080
+        // For ML Kit: Mini 480x360 pixels -> Ratio: 1.3
+        private const val RESOLUTION_MAX = 1920
+        private const val RESOLUTION_MIN = 1080
     }
 
     // METHODS -------------------------------------------------------------------------------------
@@ -168,28 +169,14 @@ class CameraXFragment : BaseFragment() {
      * Handles the [CameraState.PreviewReady] state
      */
     private fun handleStatePreviewReady() {
-        // Preview
-        val previewWidth = this._rootView.fragment_camera_preview.width.toFloat()
-        val previewHeight = this._rootView.fragment_camera_preview.height.toFloat()
+        this._rootView.fragment_camera_preview.addOnLayoutChangeListener { v, _, _, _, _, _, _, _, _ ->
+            val resolution = this.getResolution()
+            val scaleX = v.width.toFloat() / resolution.width.toFloat()
+            val scaleY = v.height.toFloat() / resolution.height.toFloat()
 
-        // ImageAnalysis
-        val resolution = this.getResolution()
-        val deltaX = previewWidth / resolution.width.toFloat()
-        val deltaY = previewHeight / resolution.height.toFloat()
-
-        /*
-            Portrait mode:
-                deltaX ............................................... 1.0
-                deltaY ............................................... 1.18125
-
-            Landscape mode: dx: 1.18125 - dy: 1.0
-                deltaX ............................................... 1.18125
-                deltaY ............................................... 1.0
-
-         */
-
-        // Scale for pose
-        this._rootView.fragment_camera_graphic_overlay.setScale(deltaX, deltaY)
+            // Scale for pose
+            this._rootView.fragment_camera_graphic_overlay.updateScale(scaleX, scaleY)
+        }
     }
 
     /**
@@ -362,11 +349,10 @@ class CameraXFragment : BaseFragment() {
      * @return a [Size]
      */
     private fun getResolution() =
-        // For ML Kit: Mini 480x360 pixels -> Ratio: 1.3
         if (this.resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
-            Size(RESOLUTION_1080_VALUE, RESOLUTION_1920_VALUE)
+            Size(RESOLUTION_MIN, RESOLUTION_MAX)
         else
-            Size(RESOLUTION_1920_VALUE, RESOLUTION_1080_VALUE)
+            Size(RESOLUTION_MAX, RESOLUTION_MIN)
 
     // -- Analyzer --
 

@@ -2,7 +2,8 @@
 
 <resources>
 
-    <!-- Gradient filter -->
+    <!-- GraphicOverlay.kt -->
     <item name="dot_radius" type="integer" format="float">8.0</item>
+    <item name="stroke_width" type="integer" format="float">5.0</item>
 
 </resources>

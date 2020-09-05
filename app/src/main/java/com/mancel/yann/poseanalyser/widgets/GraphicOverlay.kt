@@ -33,8 +33,7 @@ class GraphicOverlay(
 
     private val _pose = mutableListOf<KeyPointOfPose>()
 
-    private var _offsetX: Float? = null
-    private var _offsetY: Float? = null
+    private var _scale: PointF? = null
 
     // CONSTRUCTORS --------------------------------------------------------------------------------
 
@@ -66,6 +65,12 @@ class GraphicOverlay(
             1F
         )
 
+        // Stroke width
+        this._linePaint.strokeWidth = attributes.getFloat(
+            R.styleable.GraphicOverlay_lineWidth,
+            1F
+        )
+
         attributes.recycle()
     }
 
@@ -80,7 +85,7 @@ class GraphicOverlay(
         if (canvas == null) return
 
         // No scale
-        if (this._offsetX == null || this._offsetY == null) return
+        if (this._scale == null) return
 
         // Draw all points
         if (this._pose.isNotEmpty()) {
@@ -92,7 +97,8 @@ class GraphicOverlay(
                         keyPoint._type.name.contains("LEFT") -> this._leftPaint
                         keyPoint._type.name.contains("RIGHT") -> this._rightPaint
                         else -> this._centerPaint
-                    }
+                    },
+                    this._scale
                 )
             }
         }
@@ -103,14 +109,15 @@ class GraphicOverlay(
     private fun drawPoint(
         canvas: Canvas,
         point: PointF?,
-        paint: Paint
+        paint: Paint,
+        scale: PointF?
     ) {
         // No point
         if (point == null)  return
 
         canvas.drawCircle(
-            point.x, //* (this._offsetX ?: 1F), //translateX(point.x),
-            point.y, //* (this._offsetX ?: 1F), //translateY(point.y),
+            point.x * (scale?.x ?: 1F),
+            point.y * (scale?.y ?: 1F),
             this._dotRadius,
             paint
         )
@@ -148,8 +155,8 @@ class GraphicOverlay(
 
     // -- Scale --
 
-    fun setScale(deltaX: Float, deltaY: Float) {
-        this._offsetX = deltaX
-        this._offsetY = deltaY
-    }
+    /**
+     * Updates scale
+     */
+    fun updateScale(scaleX: Float, scaleY: Float) { this._scale = PointF(scaleX, scaleY) }
 }

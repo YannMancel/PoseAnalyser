@@ -39,7 +39,8 @@
             app:centerColor="@color/colorCenter"
             app:rightColor="@color/colorRight"
             app:lineColor="@color/colorLine"
-            app:dotRadius="@integer/dot_radius"/>
+            app:dotRadius="@integer/dot_radius"
+            app:lineWidth="@integer/stroke_width"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
