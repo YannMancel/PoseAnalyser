@@ -1,10 +1,8 @@
 package com.mancel.yann.poseanalyser.views.fragments
 
-import android.content.res.Configuration
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
-import android.util.Size
 import android.view.View
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -61,10 +59,6 @@ class CameraXFragment : BaseFragment() {
     companion object {
         private const val RATIO_4_3_VALUE = 4.0 / 3.0
         private const val RATIO_16_9_VALUE = 16.0 / 9.0
-
-        // For ML Kit: Mini 480x360 pixels -> Ratio: 1.3
-        private const val RESOLUTION_MAX = 1920
-        private const val RESOLUTION_MIN = 1080
     }
 
     // METHODS -------------------------------------------------------------------------------------
@@ -168,16 +162,7 @@ class CameraXFragment : BaseFragment() {
     /**
      * Handles the [CameraState.PreviewReady] state
      */
-    private fun handleStatePreviewReady() {
-        this._rootView.fragment_camera_preview.addOnLayoutChangeListener { v, _, _, _, _, _, _, _, _ ->
-            val resolution = this.getResolution()
-            val scaleX = v.width.toFloat() / resolution.width.toFloat()
-            val scaleY = v.height.toFloat() / resolution.height.toFloat()
-
-            // Scale for pose
-            this._rootView.fragment_camera_graphic_overlay.updateScale(scaleX, scaleY)
-        }
-    }
+    private fun handleStatePreviewReady() { /* Do nothing here */ }
 
     /**
      * Handles the [CameraState.Error] state
@@ -228,18 +213,21 @@ class CameraXFragment : BaseFragment() {
             this._rootView.fragment_camera_preview.display.getRealMetrics(it)
         }
 
+        // Ratio
+        val ratio = this.getAspectRatio(metrics.widthPixels, metrics.heightPixels)
+
         // Rotation
         val rotation = this._rootView.fragment_camera_preview.display.rotation
 
         // Use case: Preview
         this._preview = this.buildPreview(
-            this.getAspectRatio(metrics.widthPixels, metrics.heightPixels),
+            ratio,
             rotation
         )
 
         // Use case: ImageAnalysis
         this._imageAnalysis = this.buildImageAnalysis(
-            this.getResolution(),
+            ratio,
             rotation
         )
 
@@ -291,14 +279,14 @@ class CameraXFragment : BaseFragment() {
 
     /**
      * Builds [ImageAnalysis] use case of CameraX
-     * @param resolution    a [Size] that contains the resolution
-     * @param rotation      an [Int] that contains the rotation
+     * @param ratio     an [Int] that contains the ratio
+     * @param rotation  an [Int] that contains the rotation
      * @return a [ImageAnalysis]
      */
-    private fun buildImageAnalysis(resolution: Size, rotation: Int): ImageAnalysis {
+    private fun buildImageAnalysis(ratio: Int, rotation: Int): ImageAnalysis {
         return ImageAnalysis.Builder()
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-            .setTargetResolution(resolution)
+            .setTargetAspectRatio(ratio)
             .setTargetRotation(rotation)
             .build()
             .also {
@@ -336,23 +324,11 @@ class CameraXFragment : BaseFragment() {
          */
 
         val previewRatio = max(width, height).toDouble() / min(width, height).toDouble()
-        if (abs(previewRatio - RATIO_4_3_VALUE) <= abs(previewRatio - RATIO_16_9_VALUE)) {
-            return AspectRatio.RATIO_4_3
-        }
-        return AspectRatio.RATIO_16_9
+        return if (abs(previewRatio - RATIO_4_3_VALUE) <= abs(previewRatio - RATIO_16_9_VALUE))
+                 AspectRatio.RATIO_4_3
+            else
+                AspectRatio.RATIO_16_9
     }
-
-    // -- Resolution --
-
-    /**
-     * Gets the resolution to be in accordance with ML Kit
-     * @return a [Size]
-     */
-    private fun getResolution() =
-        if (this.resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
-            Size(RESOLUTION_MIN, RESOLUTION_MAX)
-        else
-            Size(RESOLUTION_MAX, RESOLUTION_MIN)
 
     // -- Analyzer --
 
@@ -364,8 +340,12 @@ class CameraXFragment : BaseFragment() {
         return MLKitPoseAnalyzer(MLKitPoseAnalyzer.ScanConfig.STREAMING_FRAMES) { scanState ->
             when (scanState) {
                 is ScanState.SuccessScan -> {
-                    val pose = scanState._pose
-                    this._viewModel.setPose(pose)
+                    // Update GraphicOverlay with the real dimensions of image
+                    this._rootView.fragment_camera_graphic_overlay.updateScale(
+                        scanState._imageWidth,
+                        scanState._imageHeight
+                    )
+                    this._viewModel.updatePose(scanState._pose)
                 }
 
                 is ScanState.FailedScan -> {

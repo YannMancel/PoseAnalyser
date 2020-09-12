@@ -31,10 +31,10 @@ class SharedViewModel :  ViewModel() {
     fun getPose(): LiveData<List<KeyPointOfPose>> = this._pose
 
     /**
-     * Sets pose to the [MutableLiveData] of [List] of [KeyPointOfPose]
+     * Updates the pose to the [MutableLiveData] of [List] of [KeyPointOfPose]
      * @param pose a [List] of [KeyPointOfPose]
      */
-    fun setPose(pose: List<KeyPointOfPose>) {
+    fun updatePose(pose: List<KeyPointOfPose>) {
         this._pose.value = pose
     }
 

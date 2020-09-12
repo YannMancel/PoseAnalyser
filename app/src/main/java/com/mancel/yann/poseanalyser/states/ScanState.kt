@@ -16,7 +16,11 @@ sealed class ScanState {
      * Where:  MLKitPoseAnalyzer#scanPose
      * Why:    Scan is a success
      */
-    class SuccessScan(val _pose: List<KeyPointOfPose>) : ScanState()
+    class SuccessScan(
+        val _pose: List<KeyPointOfPose>,
+        val _imageWidth: Int,
+        val _imageHeight: Int
+    ) : ScanState()
 
     /**
      * State:  FailedScan

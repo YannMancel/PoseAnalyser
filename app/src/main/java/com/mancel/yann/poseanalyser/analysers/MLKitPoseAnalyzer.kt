@@ -1,5 +1,6 @@
 package com.mancel.yann.poseanalyser.analysers
 
+import android.util.Size
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import com.google.mlkit.vision.common.InputImage
@@ -78,8 +79,20 @@ class MLKitPoseAnalyzer(
         poseDetector.process(image)
             .addOnSuccessListener { pose ->
                 val data = this.convertPoseFromMLKitToApp(pose)
+
+                // For ML Kit: Mini 480x360 pixels
+                val imageSize =
+                    if (image.rotationDegrees == 0 || image.rotationDegrees == 180)
+                        Size(image.width, image.height)
+                    else
+                        Size(image.height, image.width)
+
                 this._actionOnScanResult(
-                    ScanState.SuccessScan(data)
+                    ScanState.SuccessScan(
+                        data,
+                        imageSize.width,
+                        imageSize.height
+                    )
                 )
             }
             .addOnFailureListener { exception ->
@@ -129,7 +142,9 @@ class MLKitPoseAnalyzer(
         // The Pose Detection API returns a Pose object with 33 PoseLandmarks
         return mutableListOf<KeyPointOfPose>().also { newData ->
             allPoseLandmarks.forEach { poseLandmark ->
-                newData.add(this.createNewKeyPointOfPose(poseLandmark))
+                // Just points with a good accurate -> 90%
+                if (poseLandmark.inFrameLikelihood > 0.90F)
+                    newData.add(this.createNewKeyPointOfPose(poseLandmark))
             }
         }
     }

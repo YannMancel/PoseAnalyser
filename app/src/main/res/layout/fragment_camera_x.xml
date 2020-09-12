@@ -35,9 +35,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:leftColor="@color/colorLeft"
-            app:centerColor="@color/colorCenter"
-            app:rightColor="@color/colorRight"
+            app:dotColor="@color/colorDot"
             app:lineColor="@color/colorLine"
             app:dotRadius="@integer/dot_radius"
             app:lineWidth="@integer/stroke_width"/>

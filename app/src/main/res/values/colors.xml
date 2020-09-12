@@ -7,9 +7,7 @@
     <color name="colorAccent">#03DAC5</color>
 
     <!-- Colors for the pose -->
-    <color name="colorLeft">#FF9800</color>
-    <color name="colorCenter">#FFFFFF</color>
-    <color name="colorRight">#4CAF50</color>
+    <color name="colorDot">@color/colorPrimary</color>
     <color name="colorLine">#FFFFFF</color>
 
 </resources>
